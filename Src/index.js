@@ -99,8 +99,6 @@ function mousePressed()
         scrollBox.startPos = createVector(mouseX, mouseY);
         scrollBox.endPos = createVector(mouseX, mouseY);
         scrollBox.isActive = true;
-
-        print("pressed")
     }
 }
 
@@ -109,7 +107,6 @@ function mouseDragged()
     if (mouseButton === LEFT)
     {
         scrollBox.endPos = createVector(mouseX, mouseY);
-        print("dragged")
     }
 }
 
@@ -118,7 +115,8 @@ function mouseReleased()
     if (mouseButton === LEFT)
     {
         scrollBox.isActive = false;
-        print("released")
+
+        //TODO: prompt user to create a section
     }
 }
 
