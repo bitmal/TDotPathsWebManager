@@ -7,7 +7,14 @@ let drawables = [];
 let scrollBox = new ScrollBox();
 
 //**SETTINGS**
-const IMG_ZOOM = 0.75;
+const CANVAS_ZOOM = 0.75;
+
+const IMG_MAP_URL = 'http://derekm.tech/tdot_paths-map.png'
+
+const SCROLL_BOX_FILL_RGBA = new RGBA(100, 100, 255)
+const SCROLL_BOX_FILL_TRANSPARENCY = 35
+const SCROLL_BOX_BORDER_RGBA = new RGBA(100, 100, 255)
+const SCROLL_BOX_STROKE_WEIGHT = 2
 
 //**STARTUP**
 function preload()
@@ -17,17 +24,16 @@ function preload()
         imgLoadResult = result;
     }
 
-    url = 'http://derekm.tech/tdot_paths-map.png';
-    imgMap = loadImage(url, resultCallback);
+    imgMap = loadImage(IMG_MAP_URL, resultCallback);
 }
 
 function setup() 
 {
-    createCanvas(imgMap.width*IMG_ZOOM, imgMap.height*IMG_ZOOM);
+    createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
 
-    scrollBox.fillRGB = new RGBA(100, 100, 255);
-    scrollBox.borderRGB = new RGBA(0, 0, 255);
-    scrollBox.fillTransparency = 100;
+    scrollBox.fillRGB = SCROLL_BOX_FILL_RGBA;
+    scrollBox.borderRGB = SCROLL_BOX_BORDER_RGBA;
+    scrollBox.fillTransparency = SCROLL_BOX_FILL_TRANSPARENCY;
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
 }
@@ -71,7 +77,7 @@ function render()
             push()
 
             stroke(borderColor)
-            strokeWeight(4)
+            strokeWeight(SCROLL_BOX_STROKE_WEIGHT)
             fill(fillColor)
 
             rect(d.pos.x, d.pos.y, d.width, d.height);
