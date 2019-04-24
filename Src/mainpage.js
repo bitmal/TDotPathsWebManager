@@ -29,10 +29,10 @@ function preload()
 
 function setup() 
 {
-    let canvas = createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
-    canvas.id("mapcanvas")
-
-    canvas.parent('mycontent')
+    createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
+    canvas.style('display', 'block')
+    ele = select('#stuff')
+    print(ele.id)
 
     scrollBox.fillRGB = SCROLL_BOX_FILL_RGBA;
     scrollBox.borderRGB = SCROLL_BOX_BORDER_RGBA;
