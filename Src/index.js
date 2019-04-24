@@ -2,12 +2,16 @@
 let imgMap;
 let imgLoadResult;
 
+let dataRawMerchant;
+
 let drawables = [];
 
 let scrollBox = new ScrollBox();
 
 //**SETTINGS**
 const CANVAS_ZOOM = 0.75;
+
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 
 const IMG_MAP_URL = 'http://derekm.tech/tdot_paths-map.png'
 
@@ -25,6 +29,9 @@ function preload()
     }
 
     imgMap = loadImage(IMG_MAP_URL, resultCallback);
+    httpRequest("http://derekm.tech/index.html", resultCallback = function(data){
+        dataRawMerchant = data.response
+    })
 }
 
 function setup() 
@@ -39,6 +46,7 @@ function setup()
     scrollBox.fillTransparency = SCROLL_BOX_FILL_TRANSPARENCY;
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
+    
 }
 
 //**BODY**
@@ -59,6 +67,7 @@ function update()
     // dispatch drawable of objects to be drawn
     if (scrollBox.isActive)
     {
+        print(dataRawMerchant)
         append(drawables, scrollBox.drawable())
     }
 }
@@ -91,6 +100,28 @@ function render()
         // clear drawable list for next round
         drawables = []
     }
+}
+
+//**NETWORKING STUFF**
+function httpRequest(path, resultCallback, type="GET", proxy=CORS_PROXY)
+{
+    // use proxy or jsonp to get around CORS
+    // https://gist.github.com/jesperorb/6ca596217c8dfba237744966c2b5ab1e
+
+    // fetches data from url
+    let xmlreq = new XMLHttpRequest()
+    
+    xmlreq.onreadystatechange = function() {
+        resultCallback(this)
+    }
+
+    xmlreq.open("GET", CORS_PROXY+path, true)
+    xmlreq.send()
+}
+
+function parseData(data)
+{
+    // parses serialized data, and packages into data structure
 }
 
 //**EVENTS**
