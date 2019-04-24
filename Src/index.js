@@ -10,6 +10,9 @@ let drawables = [];
 
 let scrollBox = new ScrollBox();
 
+//**FLAGS**
+let isSelecting = false;
+
 //**SETTINGS**
 const CANVAS_ZOOM = 0.75;
 
@@ -39,7 +42,7 @@ function preload()
 function setup() 
 {
     let canvas = createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
-    canvas.id("mapcanvas")
+    canvas.id('mapcanvas')
 
     canvas.parent('mycontent')
 
@@ -49,7 +52,11 @@ function setup()
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
 
-    
+    $('#menu-toggle-button').click(function(e){
+        $("#wrapper").toggleClass("toggled")
+        isSelecting = false
+        scrollBox.isActive = false
+    })
 }
 
 //**BODY**
@@ -139,7 +146,7 @@ function mouseClicked()
 function mousePressed()
 {
     //append(drawables, new Drawable(createVector(mouseX, mouseY), true, true, color(255), color(255)))
-    if (mouseButton === LEFT)
+    if (mouseButton === LEFT && !isSelecting)
     {
         scrollBox.startPos = createVector(mouseX, mouseY);
         scrollBox.endPos = createVector(mouseX, mouseY);
@@ -149,7 +156,7 @@ function mousePressed()
 
 function mouseDragged()
 {
-    if (mouseButton === LEFT)
+    if (mouseButton === LEFT && !isSelecting)
     {
         scrollBox.endPos = createVector(mouseX, mouseY);
     }
@@ -157,11 +164,14 @@ function mouseDragged()
 
 function mouseReleased()
 {
-    if (mouseButton === LEFT)
+    if (mouseButton === LEFT && !isSelecting)
     {
-        scrollBox.isActive = false;
+        //scrollBox.isActive = false;
 
         //TODO: prompt user to create a section
+        $("#wrapper").toggleClass("toggled")
+        
+        isSelecting = true
     }
 }
 
@@ -183,6 +193,7 @@ function JSONDocument()
 
                 this.path = data.responseURL
                 this.raw = data.response;
+                print(data.response)
                 this.data = JSON.parse(data.response)
             }
         })
