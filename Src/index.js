@@ -4,6 +4,8 @@ let imgLoadResult;
 
 let dataRawMerchant;
 
+let jsonDoc;
+
 let drawables = [];
 
 let scrollBox = new ScrollBox();
@@ -29,9 +31,9 @@ function preload()
     }
 
     imgMap = loadImage(IMG_MAP_URL, resultCallback);
-    httpRequest("http://derekm.tech/index.html", resultCallback = function(data){
-        dataRawMerchant = data.response
-    })
+
+    jsonDoc = new JSONDocument()
+    jsonDoc.pull('http://derekm.tech/test.json')
 }
 
 function setup() 
@@ -46,6 +48,7 @@ function setup()
     scrollBox.fillTransparency = SCROLL_BOX_FILL_TRANSPARENCY;
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
+
     
 }
 
@@ -67,7 +70,6 @@ function update()
     // dispatch drawable of objects to be drawn
     if (scrollBox.isActive)
     {
-        print(dataRawMerchant)
         append(drawables, scrollBox.drawable())
     }
 }
@@ -103,7 +105,7 @@ function render()
 }
 
 //**NETWORKING STUFF**
-function httpRequest(path, resultCallback, type="GET", proxy=CORS_PROXY)
+function httpRequest(path, responseType, resultCallback, type="GET", proxy=CORS_PROXY)
 {
     // use proxy or jsonp to get around CORS
     // https://gist.github.com/jesperorb/6ca596217c8dfba237744966c2b5ab1e
@@ -115,19 +117,23 @@ function httpRequest(path, resultCallback, type="GET", proxy=CORS_PROXY)
         resultCallback(this)
     }
 
-    xmlreq.open("GET", CORS_PROXY+path, true)
+    xmlreq.open(type, CORS_PROXY+path, true)
+    xmlreq.responseType = responseType
     xmlreq.send()
-}
-
-function parseData(data)
-{
-    // parses serialized data, and packages into data structure
 }
 
 //**EVENTS**
 function windowResized()
 {
     
+}
+
+function mouseClicked()
+{
+    if (mouseButton === LEFT)
+    {
+        print(jsonDoc.raw)
+    }
 }
 
 function mousePressed()
@@ -160,6 +166,38 @@ function mouseReleased()
 }
 
 //**TYPES**
+function JSONDocument()
+{
+    this.isLoaded = false
+
+    this.path = null
+    this.raw = null
+    this.data = null
+
+    this.pull = function(path)
+    {
+        httpRequest(path, "", function(data){
+            if (data.status === 200)
+            {
+                this.isLoaded = true
+
+                this.path = data.responseURL
+                this.raw = data.response;
+                this.data = JSON.parse(data.response)
+            }
+        })
+    }
+
+    this.push = function(path)
+    {
+
+    }
+
+    this.write = function(data)
+    {
+    }
+}
+
 function RGBA(r, g, b, a)
 {
     this.r = r;
