@@ -10,6 +10,9 @@ let drawables = [];
 
 let scrollBox = new ScrollBox();
 
+let mapController = new MapController()
+
+
 //**FLAGS**
 let isSelecting = false;
 
@@ -52,10 +55,20 @@ function setup()
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
 
+    var testSectionIDInc = 0
+    $('#add-section-button').click(function(e){
+        
+        let width = scrollBox.endPos.x - scrollBox.startPos.x
+        let height = scrollBox.endPos.y - scrollBox.startPos.y
+        let position = scrollBox.startPos
+
+        mapController.AddMapSection("test"+testSectionIDInc++, position, width, height)
+
+        closeMainMenu()
+    })
+
     $('#menu-toggle-button').click(function(e){
-        $("#wrapper").toggleClass("toggled")
-        isSelecting = false
-        scrollBox.isActive = false
+        closeMainMenu()
     })
 }
 
@@ -69,7 +82,17 @@ function draw()
 
 function input()
 {
-
+    if (keyIsPressed && keyIsDown(LEFT_ARROW))
+    {
+        mapController.merchantMapData.sectionLookupByID.forEach(function(section){
+            let area = section.area.getArea()
+            
+            let drawable = new Drawable(createVector(section.area.position.x, section.area.position.y),
+                section.area.width, section.area.height, false, true, scrollBox.borderRGB, scrollBox.fillRGB)
+            
+            drawables.push(drawable)
+        })
+    }
 }
 
 function update()
@@ -110,6 +133,16 @@ function render()
         drawables = []
     }
 }
+
+// UI stuff
+function closeMainMenu()
+{
+    $("#wrapper").toggleClass("toggled")
+    isSelecting = false
+    scrollBox.isActive = false
+}
+
+//**MAP STUFF**
 
 //**NETWORKING STUFF**
 function httpRequest(path, responseType, resultCallback, type="GET", proxy=CORS_PROXY)
@@ -176,6 +209,187 @@ function mouseReleased()
 }
 
 //**TYPES**
+function Rect(position, width, height)
+{
+    this.position = position
+    this.width = width
+    this.height = height
+
+    this.getArea = function()
+    {
+        return {topLeft: [this.position.x, this.position.y], bottomLeft: [this.position.x, this.position.y+this.height],
+            bottomRight: [this.position.x+this.width], topRight: [this.position.x+this.width, this.position.y]}
+    }
+}
+
+function MapController()
+{
+    this.merchantMapData = new MerchantMap()
+
+    this.isLoaded = false
+    this.selectedSection = null
+
+    this.LoadMapData = function()
+    {
+        //TODO: store json map data in here instead of globally
+        //TEMP
+        // let section = merchantMapData.AddMapSection("First Canadien Place", new Rect());
+        // MapData.AddMapMerchant("Calli Love", section.id);
+        // section = MapData.AddMapSection("Commerce Court East", new SkiaSharp.SKRect(400, 400, 600, 600));
+        // MapData.AddMapMerchant("Marcellos", section.id);
+    }
+
+    this.AddMapSection = function(name, position, width, height)
+    {
+        let area = new Rect(position, width, height)
+        let section = this.merchantMapData.AddMapSection(name, area, true);
+    }
+}
+
+function SectionMap(name, id, area, isActive=true)
+{
+    this.name = name
+    this.id = id
+    this.area = area
+    this.isActive = isActive
+}
+
+function MapMerchant(name, id, sectionId, isMerchant=false)
+{
+    this.name = name
+    this.id = id
+    this.sectionId = sectionId
+    this.isMerchant = isMerchant
+}
+
+function MerchantMap()
+{
+    this.sectionLookupByID = new Map();
+    this.merchantIDLookupByName = new Map();
+    this.merchantLookupByID = new Map();
+
+    // Properties
+    this.isLoaded = false
+
+    this.LoadMapData = function(dataFileAssembly)
+    {
+        // Clear out old data
+        sectionLookupByID.Clear();
+        merchantIDLookupByName.Clear();
+        merchantLookupByID.Clear();
+        
+        //TODO: query server for map data
+        
+        //TODO: parse data (json still needs to be implemented)
+
+        //TODO: store data in dictionaries
+        //1) AddSection foreach section datum
+        //2) AddMapMerchant foreach merchant datum
+
+        isLoaded = true;
+    }
+
+    this.AddMapSection = function(name, area, isActive = true, id=null)
+    {
+        let sectionID = id == null ? name.replace(/ /g, '') : id;
+
+        if (sectionID == null)
+        {
+            print("Map.AddSection: Section name cannot be null!");
+        }
+        else if (this.sectionLookupByID.has(sectionID))
+        {
+            print("Map.AddSection: Section '" + sectionID + "' already exists!");
+        }
+
+        let section = new SectionMap(name, sectionID, area, isActive);
+        this.sectionLookupByID.set(section.id, section);
+
+        return section;
+    }
+
+    this.AddMapMerchant = function(name, sectionID, id=null, isMerchant=false)
+    {
+        let merchantID = id == null ? name.replace(/ /g, '') : id;
+
+        if (id == null)
+        {
+            let merchantIDNumber = 0;
+            while (merchantIDLookupByName.has(merchantID+merchantIDNumber))
+            {
+                ++merchantIDNumber;
+            }
+
+            merchantID += merchantIDNumber;
+        }
+
+        let merchant = new MapMerchant(name, merchantID, sectionID, isMerchant);
+
+        let merchants = null;
+
+        if (merchantIDLookupByName.has(merchant.name))
+        {
+            merchants = merchantIDLookupByName.get(merchant.name)
+        }
+        else
+        {
+            merchants = []
+            merchantIDLookupByName.set(merchant.name, merchants);
+        }
+
+        merchants.Add(merchant.id);
+        merchantLookupByID.Add(merchant.id, merchant);
+
+        return merchant;
+    }
+
+    // gets the available merchant IDs
+    // returns NULL if not found
+    this.GetMapMerchantIDListByName = function(name)
+    {
+        let merchantIDList = null;
+
+        if (merchantIDLookupByName.has(name))
+        {
+            merchantIDList = merchantIDLookupByName.get(name);
+        }
+
+        return merchantIDList;
+    }
+
+    // section id will be null if section was not located
+    this.GetMapSectionByID = function(id)
+    {
+        if (sectionLookupByID.has(id))
+        {
+            return sectionLookupByID.get(id);
+        }
+
+        return new MapSection();
+    }
+
+    // merchant id will be null if merchant was not located
+    this.GetMapMerchantByID = function(id)
+    {
+        if (merchantLookupByID.has(id))
+        {
+            return merchantLookupByID.get(id);
+        }
+
+        return new MapMerchant();
+    }
+
+    this.ContainsSection = function(id)
+    {
+        return sectionLookupByID.has(id);
+    }
+
+    this.ContainsMerchant = function(id)
+    {
+        return merchantLookupByID.has(id);
+    }
+}
+
 function JSONDocument()
 {
     this.isLoaded = false
