@@ -12,9 +12,10 @@ let scrollBox = new ScrollBox();
 
 let mapController = new MapController()
 
-
-//**FLAGS**
-let isSelecting = false;
+//**STATE**
+const states = ["default", "section", "merchant", "addsection", 
+    "addmerchant", "selectsection", "selectmerchant"]
+let currentState;
 
 //**SETTINGS**
 const CANVAS_ZOOM = 0.75;
@@ -28,6 +29,12 @@ const SCROLL_BOX_FILL_TRANSPARENCY = 35
 const SCROLL_BOX_BORDER_RGBA = new RGBA(100, 100, 255)
 const SCROLL_BOX_STROKE_WEIGHT = 2
 
+//**HTML/JS ELEMENTS**
+const MAP_CANVAS_ID = "#mapcanvas"
+const ADD_SECTION_INPUT_ID = "#add-section-input"
+const ADD_SECTION_BUTTON_ID = "#add-section-button"
+const MENU_TOGGLE_BUTTON_ID = "#menu-toggle-button"
+
 //**STARTUP**
 function preload()
 {
@@ -38,6 +45,8 @@ function preload()
 
     imgMap = loadImage(IMG_MAP_URL, resultCallback);
 
+    currentState = "default"
+
     jsonDoc = new JSONDocument()
     jsonDoc.pull('http://derekm.tech/test.json')
 }
@@ -45,7 +54,7 @@ function preload()
 function setup() 
 {
     let canvas = createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
-    canvas.id('mapcanvas')
+    canvas.id(MAP_CANVAS_ID)
 
     canvas.parent('mycontent')
 
@@ -55,19 +64,31 @@ function setup()
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
 
-    var testSectionIDInc = 0
-    $('#add-section-button').click(function(e){
-        
-        let width = scrollBox.endPos.x - scrollBox.startPos.x
-        let height = scrollBox.endPos.y - scrollBox.startPos.y
-        let position = scrollBox.startPos
-
-        mapController.AddMapSection("test"+testSectionIDInc++, position, width, height)
-
-        closeMainMenu()
+    $(ADD_SECTION_BUTTON_ID).click(function(e){
+        //TODO (ASAP): cache new selectedSection to be added once the user inputs a name on
+        // the scrollbar
     })
 
-    $('#menu-toggle-button').click(function(e){
+    $(document).on("keypress", ADD_SECTION_INPUT_ID, function(e){
+        let value = e.target.value
+        
+        if (e.key === "Enter" && value !== "")
+        {
+            let width = scrollBox.endPos.x - scrollBox.startPos.x
+            let height = scrollBox.endPos.y - scrollBox.startPos.y
+            let position = scrollBox.startPos
+
+            mapController.AddMapSection(value, position, width, height)
+
+            e.target.value = ""
+            $(MAP_CANVAS_ID).focus()
+            
+            //TODO: prompt user with search bar to insert section
+            closeMainMenu()
+        }
+    })
+
+    $(MENU_TOGGLE_BUTTON_ID).click(function(e){
         closeMainMenu()
     })
 }
@@ -82,26 +103,65 @@ function draw()
 
 function input()
 {
-    if (keyIsPressed && keyIsDown(LEFT_ARROW))
+    if (keyIsPressed && keyIsDown(CONTROL))
     {
-        mapController.merchantMapData.sectionLookupByID.forEach(function(section){
-            let area = section.area.getArea()
-            
-            let drawable = new Drawable(createVector(section.area.position.x, section.area.position.y),
-                section.area.width, section.area.height, false, true, scrollBox.borderRGB, scrollBox.fillRGB)
-            
-            drawables.push(drawable)
-        })
+        switch (currentState)
+        {
+            // case = default
+            case states[0]:
+            {
+                // state = merchant
+                currentState = states[2]
+            }
+            break
+        }
+    }
+    else if (!keyIsPressed)
+    {
+        switch(currentState)
+        {
+            // state = merchant
+            case states[2]:
+            {
+                // state = default
+                currentState = states[0]
+            }
+            break
+        }
     }
 }
 
 function update()
 {
-    // dispatch drawable of objects to be drawn
-    if (scrollBox.isActive)
+    switch (currentState)
     {
-        append(drawables, scrollBox.drawable())
-    }
+        // state = section
+        case states[1]:
+        {
+            // dispatch drawable of objects to be drawn
+            if (scrollBox.isActive)
+            {
+                append(drawables, scrollBox.drawable())
+            }
+        }
+        break
+        // state = merchant
+        case states[2]:
+        {
+            // display map areas, so user can select a section to add a merchant
+            mapController.merchantMapData.sectionLookupByID.forEach(function(section){
+                let area = section.area.getArea()
+                
+                let drawable = new Drawable(createVector(section.area.position.x, section.area.position.y),
+                    section.area.width, section.area.height, false, true, scrollBox.borderRGB, scrollBox.fillRGB)
+                
+                drawables.push(drawable)
+            })
+        }
+        break
+    }  
+
+    //print(currentState)
 }
 
 function render()
@@ -138,8 +198,8 @@ function render()
 function closeMainMenu()
 {
     $("#wrapper").toggleClass("toggled")
-    isSelecting = false
     scrollBox.isActive = false
+    currentState = states[0]
 }
 
 //**MAP STUFF**
@@ -172,39 +232,80 @@ function mouseClicked()
 {
     if (mouseButton === LEFT)
     {
-        print(jsonDoc.raw)
+        //print(jsonDoc.raw)
     }
 }
 
 function mousePressed()
 {
     //append(drawables, new Drawable(createVector(mouseX, mouseY), true, true, color(255), color(255)))
-    if (mouseButton === LEFT && !isSelecting)
+    if (mouseButton === LEFT)
     {
-        scrollBox.startPos = createVector(mouseX, mouseY);
-        scrollBox.endPos = createVector(mouseX, mouseY);
-        scrollBox.isActive = true;
+        switch (currentState)
+        {
+            // case = default
+            case states[0]:
+            {
+                scrollBox.startPos = createVector(mouseX, mouseY);
+                scrollBox.endPos = createVector(mouseX, mouseY);
+                scrollBox.isActive = true;
+
+                // state = section
+                currentState = states[1]
+            }
+            break
+        }
+    }
+    else if (mouseButton === RIGHT)
+    {
+        
     }
 }
 
 function mouseDragged()
 {
-    if (mouseButton === LEFT && !isSelecting)
+    if (mouseButton === LEFT)
     {
-        scrollBox.endPos = createVector(mouseX, mouseY);
+        switch (currentState)
+        {
+            // state = "section"
+            case states[1]:
+            {
+                scrollBox.endPos = createVector(mouseX, mouseY);
+            }
+            break
+            case states[2]:
+            {
+                //TODO: check whether mouse is over map area,
+                // and set 'areaHovered' accordingly
+            }
+            break
+        }
     }
 }
 
 function mouseReleased()
 {
-    if (mouseButton === LEFT && !isSelecting)
+    if (mouseButton === LEFT)
     {
-        //scrollBox.isActive = false;
-
-        //TODO: prompt user to create a section
-        $("#wrapper").toggleClass("toggled")
-        
-        isSelecting = true
+        switch (currentState)
+        {
+            // state = section
+            case states[1]:
+            {
+                //TODO: prompt user to create a section
+                $("#wrapper").toggleClass("toggled")
+                currentState = states[3]
+            }
+            break
+            // state = merchant
+            case states[2]:
+            {
+                // state = default
+                currentState = states[4]
+            }
+            break
+        }
     }
 }
 
