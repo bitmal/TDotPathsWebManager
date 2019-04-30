@@ -8,7 +8,7 @@ let jsonDoc;
 
 let drawables = [];
 
-let scrollBox = new ScrollBox();
+let scrollBox = new DisplayBox();
 
 let mapController = new MapController()
 
@@ -79,9 +79,6 @@ function setup()
             let position = scrollBox.startPos
 
             mapController.AddMapSection(value, position, width, height)
-
-            e.target.value = ""
-            $(MAP_CANVAS_ID).focus()
             
             //TODO: prompt user with search bar to insert section
             closeMainMenu()
@@ -89,6 +86,7 @@ function setup()
     })
 
     $(MENU_TOGGLE_BUTTON_ID).click(function(e){
+        clearAllInputFields()
         closeMainMenu()
     })
 }
@@ -150,18 +148,19 @@ function update()
         {
             // display map areas, so user can select a section to add a merchant
             mapController.merchantMapData.sectionLookupByID.forEach(function(section){
-                let area = section.area.getArea()
+                let area = section.area
+                let clickable = new ClickableBox(100, new RGBA(0, 0, 255), new RGBA(100, 100, 255),
+                    new RGBA(255, 0, 0), new RGBA(255, 100, 100))
+                clickable.SetPosition(area.position, createVector(area.position.x+area.width,
+                    area.position.y+area.height))
                 
-                let drawable = new Drawable(createVector(section.area.position.x, section.area.position.y),
-                    section.area.width, section.area.height, false, true, scrollBox.borderRGB, scrollBox.fillRGB)
+                let drawable = clickable.drawable()
                 
                 drawables.push(drawable)
             })
         }
         break
     }  
-
-    //print(currentState)
 }
 
 function render()
@@ -200,6 +199,13 @@ function closeMainMenu()
     $("#wrapper").toggleClass("toggled")
     scrollBox.isActive = false
     currentState = states[0]
+    $(MAP_CANVAS_ID).focus()
+}
+
+function clearAllInputFields()
+{
+    let sectionInput = $(ADD_SECTION_INPUT_ID)[0]
+    sectionInput.value = ""
 }
 
 //**MAP STUFF**
@@ -233,6 +239,19 @@ function mouseClicked()
     if (mouseButton === LEFT)
     {
         //print(jsonDoc.raw)
+
+        switch(currentState)
+        {
+            // state = merchant
+            case states[2]:
+            {
+                //TODO: check for mouse overlap, and if so, set to the appropriate state
+
+                // state = default
+                currentState = states[4]
+            }
+            break
+        }
     }
 }
 
@@ -295,16 +314,11 @@ function mouseReleased()
             {
                 //TODO: prompt user to create a section
                 $("#wrapper").toggleClass("toggled")
+                $(ADD_SECTION_INPUT_ID).focus()
                 currentState = states[3]
             }
             break
-            // state = merchant
-            case states[2]:
-            {
-                // state = default
-                currentState = states[4]
-            }
-            break
+            
         }
     }
 }
@@ -397,10 +411,12 @@ function MerchantMap()
         if (sectionID == null)
         {
             print("Map.AddSection: Section name cannot be null!");
+            return null
         }
         else if (this.sectionLookupByID.has(sectionID))
         {
             print("Map.AddSection: Section '" + sectionID + "' already exists!");
+            return null
         }
 
         let section = new SectionMap(name, sectionID, area, isActive);
@@ -532,15 +548,68 @@ function RGBA(r, g, b, a)
     this.a = a;
 }
 
-function ScrollBox(fillTransparency, borderRGB, fillRGB)
+function ClickableBox(fillTransparency, borderRGB, fillRGB, clickBorderRGB, clickFillRGB, hoverBorderRGB, hoverFillRGB)
+{
+    this.displayBox = new DisplayBox(fillTransparency, borderRGB, fillRGB)
+    this.fillTransparency = fillTransparency
+    this.borderRGB = borderRGB
+    this.fillRGB = fillRGB
+    this.clickBorderRGB = clickBorderRGB
+    this.clickFillRGB = clickFillRGB 
+    this.hoverBorderRGB = hoverBorderRGB
+    this.hoverFillRGB = hoverFillRGB
+
+    this.SetPosition = function(startPos, endPos)
+    {
+        this.displayBox.startPos = startPos
+        this.displayBox.endPos = endPos
+    }
+
+    this.StartClick = function(callback=function(){})
+    {
+        this.displayBox.borderRGB = clickBorderRGB
+        this.displayBox.fillRGB = clickFillRGB
+        callback()
+    }
+
+    this.EndClick = function(callback=function(){})
+    {
+        this.displayBox.borderRGB = borderRGB
+        this.displayBox.fillRGB = fillRGB
+        callback()
+    }
+
+    this.StartHover = function(callback=function(){})
+    {
+        this.displayBox.borderRGB = hoverBorderRGB
+        this.displayBox.fillRGB = hoverFillRGB
+        callback()
+    }
+
+    this.EndHover = function(callback=function(){})
+    {
+        this.displayBox.borderRGB = borderRGB
+        this.displayBox.fillRGB = fillRGB
+        callback()
+    }
+
+    this.drawable = function()
+    {
+        let drawable = this.displayBox.drawable()
+        drawable.startPos = this.startPos
+        drawable.endPos = this.endPos
+
+        return drawable
+    }
+}
+
+function DisplayBox(fillTransparency, borderRGB, fillRGB)
 {
     this.startPos;
     this.endPos;
     this.fillTransparency = fillTransparency;
     this.borderRGB = borderRGB;
     this.fillRGB = fillRGB;
-    
-    this.isActive = false;
 
     this.drawable = function()
     {
