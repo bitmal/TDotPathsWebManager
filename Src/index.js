@@ -35,6 +35,8 @@ const ADD_SECTION_INPUT_ID = "#add-section-input"
 const ADD_SECTION_BUTTON_ID = "#add-section-button"
 const MENU_TOGGLE_BUTTON_ID = "#menu-toggle-button"
 
+let mouseDown = false
+
 //**STARTUP**
 function preload()
 {
@@ -157,12 +159,21 @@ function update()
                     area.position.y+area.height))
                 if (clickable.Overlaps(createVector(mouseX, mouseY)))
                 {
-                    clickable.StartHover(function() 
+                    if (!mouseDown)
                     {
-                        print(section.id)
-                    })
+                        clickable.StartHover(function() 
+                        {
+                            print(section.id)
+                        })
+                    }
+                    else
+                    {
+                        clickable.StartClick(function() 
+                        {
+                            print(section.id)
+                        })
+                    }
                 }
-                
                 
                 let drawable = clickable.drawable()
                 
@@ -267,6 +278,7 @@ function mouseClicked()
 
 function mousePressed()
 {
+    mouseDown = true
     //append(drawables, new Drawable(createVector(mouseX, mouseY), true, true, color(255), color(255)))
     if (mouseButton === LEFT)
     {
@@ -315,6 +327,8 @@ function mouseDragged()
 
 function mouseReleased()
 {
+    mouseDown = false
+    
     if (mouseButton === LEFT)
     {
         switch (currentState)
