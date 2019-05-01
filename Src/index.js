@@ -146,13 +146,23 @@ function update()
         // state = merchant
         case states[2]:
         {
+            // check if mouse is within bounds of one of the boxes, and change them appropriately
+
             // display map areas, so user can select a section to add a merchant
             mapController.merchantMapData.sectionLookupByID.forEach(function(section){
                 let area = section.area
                 let clickable = new ClickableBox(100, new RGBA(0, 0, 255), new RGBA(100, 100, 255),
-                    new RGBA(255, 0, 0), new RGBA(255, 100, 100))
+                    new RGBA(255, 0, 0), new RGBA(255, 100, 100), new RGBA(255, 255, 0), new RGBA(255, 255, 100))
                 clickable.SetPosition(area.position, createVector(area.position.x+area.width,
                     area.position.y+area.height))
+                if (clickable.Overlaps(createVector(mouseX, mouseY)))
+                {
+                    clickable.StartHover(function() 
+                    {
+                        print(section.id)
+                    })
+                }
+                
                 
                 let drawable = clickable.drawable()
                 
@@ -248,7 +258,7 @@ function mouseClicked()
                 //TODO: check for mouse overlap, and if so, set to the appropriate state
 
                 // state = default
-                currentState = states[4]
+                //currentState = states[4]
             }
             break
         }
@@ -591,6 +601,15 @@ function ClickableBox(fillTransparency, borderRGB, fillRGB, clickBorderRGB, clic
         this.displayBox.borderRGB = borderRGB
         this.displayBox.fillRGB = fillRGB
         callback()
+    }
+
+    this.Overlaps = function(pos)
+    {
+        let startPos = this.displayBox.startPos
+        let endPos = this.displayBox.endPos
+
+        return (pos.x > startPos.x && pos.x < endPos.x &&
+            pos.y > startPos.y && pos.y < endPos.y)
     }
 
     this.drawable = function()
