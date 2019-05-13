@@ -4,10 +4,13 @@
  * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-simple-sidebar/blob/master/LICENSE)
  */
 body {
+  background-color: white;
   overflow-x: hidden;
 }
 
-#sidebar-wrapper {
+/*left sidebar*/
+#sidebar-wrapper-left {
+  align-self: center;
   min-height: 100vh;
   margin-left: -15rem;
   -webkit-transition: margin .25s ease-out;
@@ -16,12 +19,16 @@ body {
   transition: margin .25s ease-out;
 }
 
-#sidebar-wrapper .sidebar-heading {
+#sidebar-wrapper-left .sidebar-heading {
   padding: 0.875rem 1.25rem;
   font-size: 1.2rem;
 }
 
-#sidebar-wrapper .list-group {
+#sidebar-wrapper-left .btn-group {
+  width: 15rem;
+}
+
+#sidebar-wrapper-left #add-section-input {
   width: 15rem;
 }
 
@@ -29,21 +36,25 @@ body {
   min-width: 100vw;
 }
 
-#wrapper.toggled #sidebar-wrapper {
+#wrapper-left.toggled #sidebar-wrapper-left {
   margin-left: 0;
 }
 
 @media (min-width: 768px) {
-  #sidebar-wrapper {
+  #sidebar-wrapper-left {
     margin-left: 0;
   }
 
-  #page-content-wrapper {
+  #sidebar-wrapper-right {
+    margin-right: 0;
+  }
+
+  #content {
     min-width: 0;
     width: 100%;
   }
 
-  #wrapper.toggled #sidebar-wrapper {
+  #wrapper-left.toggled #sidebar-wrapper-left {
     margin-left: -15rem;
   }
 }

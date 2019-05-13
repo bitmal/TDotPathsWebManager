@@ -31,6 +31,7 @@ const SCROLL_BOX_STROKE_WEIGHT = 2
 
 //**HTML/JS ELEMENTS**
 const MAP_CANVAS_ID = "#mapcanvas"
+const MAP_CANVAS_PARENT_ID = "#content"
 const ADD_SECTION_INPUT_ID = "#add-section-input"
 const ADD_SECTION_BUTTON_ID = "#add-section-button"
 const MENU_TOGGLE_BUTTON_ID = "#menu-toggle-button"
@@ -58,7 +59,7 @@ function setup()
     let canvas = createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
     canvas.id(MAP_CANVAS_ID)
 
-    canvas.parent('mycontent')
+    canvas.parent(MAP_CANVAS_PARENT_ID)
 
     scrollBox.fillRGB = SCROLL_BOX_FILL_RGBA;
     scrollBox.borderRGB = SCROLL_BOX_BORDER_RGBA;
@@ -112,6 +113,7 @@ function input()
             {
                 // state = merchant
                 currentState = states[2]
+                $("#wrapper-right").toggleClass("toggled")
             }
             break
         }
@@ -125,6 +127,7 @@ function input()
             {
                 // state = default
                 currentState = states[0]
+                $("#wrapper-right").toggleClass("toggled")
             }
             break
         }
@@ -154,7 +157,7 @@ function update()
             mapController.merchantMapData.sectionLookupByID.forEach(function(section){
                 let area = section.area
                 let clickable = new ClickableBox(100, new RGBA(0, 0, 255), new RGBA(100, 100, 255),
-                    new RGBA(255, 0, 0), new RGBA(255, 100, 100), new RGBA(255, 255, 0), new RGBA(255, 255, 100))
+                    new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(50, 50, 255))
                 clickable.SetPosition(area.position, createVector(area.position.x+area.width,
                     area.position.y+area.height))
                 if (clickable.Overlaps(createVector(mouseX, mouseY)))
@@ -217,7 +220,7 @@ function render()
 // UI stuff
 function closeMainMenu()
 {
-    $("#wrapper").toggleClass("toggled")
+    $("#wrapper-left").toggleClass("toggled")
     scrollBox.isActive = false
     currentState = states[0]
     $(MAP_CANVAS_ID).focus()
@@ -337,7 +340,7 @@ function mouseReleased()
             case states[1]:
             {
                 //TODO: prompt user to create a section
-                $("#wrapper").toggleClass("toggled")
+                $("#wrapper-left").toggleClass("toggled")
                 $(ADD_SECTION_INPUT_ID).focus()
                 currentState = states[3]
             }
