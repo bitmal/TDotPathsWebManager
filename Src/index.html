@@ -1,84 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-
-  <title>Simple Sidebar - Start Bootstrap Template</title>
-
-  <!-- Bootstrap core CSS -->
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Custom styles for this template -->
-  <link href="css/simple-sidebar.css" rel="stylesheet">
-
+  
   <!-- p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.js"></script>
 
-  <!--scripts-->
+  <!--scripts -->
   <script src="index.js"></script>
 
+  <link rel="stylesheet" type="text/css" href="path.css">
 </head>
-
 <body>
-
-  <!-- Left Side Bar -->
-    <div class="d-flex toggled" id="wrapper-left">
-    <!-- Sidebar -->
-      <div class="bg-light border-right" id="sidebar-wrapper-left">
-      <div class="sidebar-heading"><b>TDot Paths Mapper</b></div>
-      <div class="btn-group btn-group-vertical">
-        <button class="btn btn-lg" id="add-section-button">Add Section</a>
-        <button class="btn btn-lg" id="add-merchant-button">Add Merchant</a>
-        <button class="btn btn-primary btn-lg" id="menu-toggle-button">Back</a>
-      </div>
-      <div class="form-group">
-        <input type="text" id="add-section-input" />
-      </div>
+  <div class="content">
+    
   </div>
-  
-  <!-- Page Content -->
-  <div class="d-flex" id="content-wrapper">
-    <div class="container-fluid" id="content">
+  <div class = "modal">
+    <div class = "modalContent">
+      <span class = "modalClose">&times;</span>
     </div>
   </div>
-
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalLoginForm">
-      Open modal
-    </button>
-
-    <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header text-center">
-          <h4 class="modal-title w-100 font-weight-bold">Add Map Section</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body mx-3">
-          <div class="md-form mb-5">
-            <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" id="section-form-input">
-            <label style="color:#ff0000">Section Name</label>
-          </div>
-  
-        </div>
-        <div class="modal-footer d-flex justify-content-center">
-          <button class="btn btn-default">Ok</button>
-        </div>
-      </div>
-    </div>
+  <div class="nav">
   </div>
-
-  <!-- Bootstrap core JavaScript -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

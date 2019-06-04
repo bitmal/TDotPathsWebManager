@@ -13,16 +13,13 @@ let scrollBox = new DisplayBox();
 let mapController = new MapController()
 
 //**STATE**
-const states = ["default", "section", "merchant", "addsection", 
-    "addmerchant", "selectsection", "selectmerchant"]
+const states = ["default", "addSectionModal", "addMerchantModal", "createSection", "selectSection"]
 let currentState;
 
 //**SETTINGS**
-const CANVAS_ZOOM = 0.75;
-
 const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 
-const IMG_MAP_URL = 'http://derekm.tech/tdot_paths-map.png'
+const IMG_MAP_URL = 'path-map.png'
 
 const SCROLL_BOX_FILL_RGBA = new RGBA(100, 100, 255)
 const SCROLL_BOX_FILL_TRANSPARENCY = 35
@@ -30,11 +27,16 @@ const SCROLL_BOX_BORDER_RGBA = new RGBA(100, 100, 255)
 const SCROLL_BOX_STROKE_WEIGHT = 2
 
 //**HTML/JS ELEMENTS**
-const MAP_CANVAS_ID = "#mapcanvas"
-const MAP_CANVAS_PARENT_ID = "#content"
-const ADD_SECTION_INPUT_ID = "#add-section-input"
-const ADD_SECTION_BUTTON_ID = "#add-section-button"
-const MENU_TOGGLE_BUTTON_ID = "#menu-toggle-button"
+let CONTENT_CLASS = ".content"
+let MAP_CANVAS_CLASS = ".mapCanvas"
+
+let CONTENT
+let CANVAS
+let ADD_SECTION_BTN
+let ADD_MERCHANT_BTN
+let NAV
+let DETAILS_MODAL
+let DETAILS_MODAL_CONTENT
 
 let mouseDown = false
 
@@ -56,42 +58,147 @@ function preload()
 
 function setup() 
 {
-    let canvas = createCanvas(imgMap.width*CANVAS_ZOOM, imgMap.height*CANVAS_ZOOM);
-    canvas.id(MAP_CANVAS_ID)
+    CONTENT = document.getElementsByClassName("content")[0]
+    
+    CANVAS = createCanvas(imgMap.width, imgMap.height);
+    CANVAS.parent(CONTENT)
+    
+    ADD_SECTION_BTN = document.createElement("button")
+    ADD_SECTION_BTN.setAttribute("class", "navItem")
+    ADD_SECTION_BTN.innerHTML = "Add Section"
+    ADD_SECTION_BTN.onclick = function() {
+        // TODO: trigger modal
+        DETAILS_MODAL.style.display = "block"
+        addSectionDiv.style.display = "block"
+        addMerchantDiv.style.display = "none"
+        currentState = "addSectionModal"
+    }
 
-    canvas.parent(MAP_CANVAS_PARENT_ID)
+    ADD_MERCHANT_BTN = document.createElement("button")
+    ADD_MERCHANT_BTN.setAttribute("class", "navItem")
+    ADD_MERCHANT_BTN.innerHTML = "Add Merchant"
+    ADD_MERCHANT_BTN.onclick = function() {
+        // TODO: trigger modal
+        DETAILS_MODAL.style.display = "block"
+        addSectionDiv.style.display = "none"
+        addMerchantDiv.style.display = "block"
+        currentState = "addMerchantModal"
+    }
+    
+    let modalClose = document.getElementsByClassName("modalClose")[0]
+    modalClose.onclick = function() {
+        DETAILS_MODAL.style.display = "none"
+        resetState()
+    }
+
+    window.onclick = function(event) {
+        if (event.target == DETAILS_MODAL) {
+            DETAILS_MODAL.style.display = "none"
+            resetState()
+        }
+    }
+
+    NAV = document.getElementsByClassName("nav")[0] 
+    NAV.appendChild(ADD_SECTION_BTN)    
+    NAV.appendChild(ADD_MERCHANT_BTN) 
+    
+    DETAILS_MODAL = document.getElementsByClassName("modal")[0]
+    DETAILS_MODAL_CONTENT = document.getElementsByClassName("modalContent")[0]
+    
+    let addSectionDiv = document.createElement("div")
+    addSectionDiv.style.display = "none"
+    addSectionDiv.setAttribute("class", "modalItem")
+    let addSectionNameLabel = document.createElement("label")
+    addSectionNameLabel.innerHTML = "Name: "
+    addSectionDiv.appendChild(addSectionNameLabel)
+    let addSectionNameInput = document.createElement("input")
+    addSectionNameInput.setAttribute("class", "modalItem")
+    addSectionNameInput.setAttribute("type", "text")
+    addSectionDiv.appendChild(addSectionNameInput)
+    let addSectionIDLabel = document.createElement("label")
+    addSectionIDLabel.innerHTML = "ID: "
+    addSectionDiv.appendChild(addSectionIDLabel)
+    let addSectionIDInput = document.createElement("input")
+    addSectionIDInput.setAttribute("class", "modalItem")
+    addSectionIDInput.setAttribute("type", "text")
+    addSectionDiv.appendChild(addSectionIDInput)
+
+    DETAILS_MODAL_CONTENT.appendChild(addSectionDiv)
+
+    let addMerchantDiv = document.createElement("div")
+    addMerchantDiv.style.display = "none"
+    addMerchantDiv.setAttribute("class", "modalItem")
+    let addMerchantNameLabel = document.createElement("label")
+    addMerchantNameLabel.innerHTML = "Name: "
+    addMerchantDiv.appendChild(addMerchantNameLabel)
+    let addMerchantNameInput = document.createElement("input")
+    addMerchantNameInput.setAttribute("class", "modalItem")
+    addMerchantNameInput.setAttribute("type", "text")
+    addMerchantDiv.appendChild(addMerchantNameInput)
+    let addMerchantIDLabel = document.createElement("label")
+    addMerchantIDLabel.innerHTML = "ID: "
+    addMerchantDiv.appendChild(addMerchantIDLabel)
+    let addMerchantIDInput = document.createElement("input")
+    addMerchantIDInput.setAttribute("class", "modalItem")
+    addMerchantIDInput.setAttribute("type", "text")
+    addMerchantDiv.appendChild(addMerchantIDInput)
+    let addMerchantSectionLabel = document.createElement("label")
+    addMerchantSectionLabel.innerHTML = "Section: "
+    addMerchantDiv.appendChild(addMerchantSectionLabel)
+    let addMerchantSectionInput = document.createElement("input")
+    addMerchantSectionInput.setAttribute("class", "modalItem")
+    addMerchantSectionInput.setAttribute("type", "text")
+    addMerchantDiv.appendChild(addMerchantSectionInput)
+
+    DETAILS_MODAL_CONTENT.appendChild(addMerchantDiv)
+    
+    let modalSubmit = document.createElement("button")
+    modalSubmit.setAttribute("class", "modalItem")
+    modalSubmit.innerHTML = "Submit"
+    modalSubmit.onclick = function() {
+        let success = false
+
+        switch (currentState)
+        {
+        case "addSectionModal":
+            {
+                if (addSectionNameInput.value !== "" &&
+                addSectionIDInput.value !== "")
+                {
+                    currentState = "createSection"
+                    addSectionNameInput.value = null
+                    addSectionIDInput.value = null
+                    success = true
+                }
+            }
+            break
+        case "addMerchantModal":
+            {
+                if (addMerchantNameInput.value !== "" &&
+                addMerchantIDInput.value !== "" &&
+                addMerchantSectionInput.value !== "")
+                {
+                    currentState = "selectSection"
+                    addMerchantNameInput.value = null
+                    addMerchantIDInput.value = null
+                    addMerchantSectionInput.value = null
+                    success = true
+                }
+            }
+            break
+        }
+        if (success === true)
+        {
+            DETAILS_MODAL.style.display = "none"
+        }
+    }
+    DETAILS_MODAL_CONTENT.appendChild(modalSubmit)
 
     scrollBox.fillRGB = SCROLL_BOX_FILL_RGBA;
     scrollBox.borderRGB = SCROLL_BOX_BORDER_RGBA;
     scrollBox.fillTransparency = SCROLL_BOX_FILL_TRANSPARENCY;
     scrollBox.startPos = createVector();
     scrollBox.endPos = createVector();
-
-    $(ADD_SECTION_BUTTON_ID).click(function(e){
-        //TODO (ASAP): cache new selectedSection to be added once the user inputs a name on
-        // the scrollbar
-    })
-
-    $(document).on("keypress", ADD_SECTION_INPUT_ID, function(e){
-        let value = e.target.value
-        
-        if (e.key === "Enter" && value !== "")
-        {
-            let width = scrollBox.endPos.x - scrollBox.startPos.x
-            let height = scrollBox.endPos.y - scrollBox.startPos.y
-            let position = scrollBox.startPos
-
-            mapController.AddMapSection(value, position, width, height)
-            
-            //TODO: prompt user with search bar to insert section
-            closeMainMenu()
-        }
-    })
-
-    $(MENU_TOGGLE_BUTTON_ID).click(function(e){
-        clearAllInputFields()
-        closeMainMenu()
-    })
 }
 
 //**BODY**
@@ -104,34 +211,7 @@ function draw()
 
 function input()
 {
-    if (keyIsPressed && keyIsDown(CONTROL))
-    {
-        switch (currentState)
-        {
-            // case = default
-            case states[0]:
-            {
-                // state = merchant
-                currentState = states[2]
-                $("#wrapper-right").toggleClass("toggled")
-            }
-            break
-        }
-    }
-    else if (!keyIsPressed)
-    {
-        switch(currentState)
-        {
-            // state = merchant
-            case states[2]:
-            {
-                // state = default
-                currentState = states[0]
-                $("#wrapper-right").toggleClass("toggled")
-            }
-            break
-        }
-    }
+    
 }
 
 function update()
@@ -139,7 +219,7 @@ function update()
     switch (currentState)
     {
         // state = section
-        case states[1]:
+        case "createSection":
         {
             // dispatch drawable of objects to be drawn
             if (scrollBox.isActive)
@@ -148,43 +228,37 @@ function update()
             }
         }
         break
-        // state = merchant
-        case states[2]:
-        {
-            // check if mouse is within bounds of one of the boxes, and change them appropriately
-
-            // display map areas, so user can select a section to add a merchant
-            mapController.merchantMapData.sectionLookupByID.forEach(function(section){
-                let area = section.area
-                let clickable = new ClickableBox(100, new RGBA(0, 0, 255), new RGBA(100, 100, 255),
-                    new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(50, 50, 255))
-                clickable.SetPosition(area.position, createVector(area.position.x+area.width,
-                    area.position.y+area.height))
-                if (clickable.Overlaps(createVector(mouseX, mouseY)))
-                {
-                    if (!mouseDown)
-                    {
-                        clickable.StartHover(function() 
-                        {
-                            print(section.id)
-                        })
-                    }
-                    else
-                    {
-                        clickable.StartClick(function() 
-                        {
-                            print(section.id)
-                        })
-                    }
-                }
-                
-                let drawable = clickable.drawable()
-                
-                drawables.push(drawable)
-            })
-        }
-        break
     }  
+
+    // display map areas, so user can select a section to add a merchant
+    // mapController.merchantMapData.sectionLookupByID.forEach(function(section){
+    //     let area = section.area
+    //     let clickable = new ClickableBox(100, new RGBA(0, 0, 255), new RGBA(100, 100, 255),
+    //         new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(0, 0, 255), new RGBA(50, 50, 255))
+    //     clickable.SetPosition(area.position, createVector(area.position.x+area.width,
+    //         area.position.y+area.height))
+    //     if (clickable.Overlaps(createVector(mouseX, mouseY)))
+    //     {
+    //         if (!mouseDown)
+    //         {
+    //             clickable.StartHover(function() 
+    //             {
+    //                 print(section.id)
+    //             })
+    //         }
+    //         else
+    //         {
+    //             clickable.StartClick(function() 
+    //             {
+    //                 print(section.id)
+    //             })
+    //         }
+    //     }
+        
+    //     let drawable = clickable.drawable()
+        
+    //     drawables.push(drawable)
+    // })
 }
 
 function render()
@@ -217,19 +291,10 @@ function render()
     }
 }
 
-// UI stuff
-function closeMainMenu()
+function resetState()
 {
-    $("#wrapper-left").toggleClass("toggled")
-    scrollBox.isActive = false
-    currentState = states[0]
-    $(MAP_CANVAS_ID).focus()
-}
-
-function clearAllInputFields()
-{
-    let sectionInput = $(ADD_SECTION_INPUT_ID)[0]
-    sectionInput.value = ""
+    // TODO: called to reset to default state, and to clear out any necessary buffered data
+    currentState = "default"
 }
 
 //**MAP STUFF**
@@ -262,17 +327,11 @@ function mouseClicked()
 {
     if (mouseButton === LEFT)
     {
-        //print(jsonDoc.raw)
-
         switch(currentState)
         {
-            // state = merchant
-            case states[2]:
+            case "selectSection":
             {
-                //TODO: check for mouse overlap, and if so, set to the appropriate state
-
-                // state = default
-                //currentState = states[4]
+                // TODO: user selects section while adding merchant
             }
             break
         }
@@ -282,27 +341,18 @@ function mouseClicked()
 function mousePressed()
 {
     mouseDown = true
-    //append(drawables, new Drawable(createVector(mouseX, mouseY), true, true, color(255), color(255)))
     if (mouseButton === LEFT)
     {
         switch (currentState)
         {
-            // case = default
-            case states[0]:
+            case "createSection":
             {
                 scrollBox.startPos = createVector(mouseX, mouseY);
                 scrollBox.endPos = createVector(mouseX, mouseY);
                 scrollBox.isActive = true;
-
-                // state = section
-                currentState = states[1]
             }
             break
         }
-    }
-    else if (mouseButton === RIGHT)
-    {
-        
     }
 }
 
@@ -312,16 +362,9 @@ function mouseDragged()
     {
         switch (currentState)
         {
-            // state = "section"
-            case states[1]:
+            case "createSection":
             {
-                scrollBox.endPos = createVector(mouseX, mouseY);
-            }
-            break
-            case states[2]:
-            {
-                //TODO: check whether mouse is over map area,
-                // and set 'areaHovered' accordingly
+                scrollBox.endPos = createVector(mouseX, mouseY)
             }
             break
         }
@@ -336,13 +379,11 @@ function mouseReleased()
     {
         switch (currentState)
         {
-            // state = section
-            case states[1]:
+            case "createSection":
             {
-                //TODO: prompt user to create a section
-                $("#wrapper-left").toggleClass("toggled")
-                $(ADD_SECTION_INPUT_ID).focus()
-                currentState = states[3]
+                // TODO: trigger back modal
+                scrollBox.isActive = false
+                currentState = "default"
             }
             break
             
