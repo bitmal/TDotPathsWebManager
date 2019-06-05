@@ -398,10 +398,26 @@ function mouseReleased()
         {
             case "createSection":
             {
-                // TODO: add section using global data
                 let drawable = scrollBox.drawable()
-                mapController.AddMapSection(GLOBAL.name, drawable.pos,
-                    drawable.width, drawable.height)
+                // if selection box lies within bounds of canvas...
+                let pos = drawable.pos
+                let width = drawable.width
+                let height = drawable.height
+
+                if ((pos.x >= 0 && pos.x <= CANVAS.width &&
+                        pos.y >= 0 && pos.y <= CANVAS.height) &&
+                    (pos.x+width >= 0 && pos.x+width <= CANVAS.width &&
+                        pos.y+height >= 0 && pos.y+height <= CANVAS.height)
+                )
+                {
+                    // TODO: add section using global data
+                    mapController.AddMapSection(GLOBAL.name, drawable.pos,
+                        drawable.width, drawable.height)
+                }
+                else
+                {
+                    print("invalid section selection")
+                }
                 scrollBox.isActive = false
                 currentState = "default"
             }
