@@ -150,17 +150,13 @@ function setup()
     let addMerchantSectionLabel = document.createElement("label")
     addMerchantSectionLabel.innerHTML = "Section: "
     addMerchantDiv.appendChild(addMerchantSectionLabel)
-    let addMerchantSectionInput = document.createElement("input")
-    addMerchantSectionInput.setAttribute("class", "modalItem")
-    addMerchantSectionInput.setAttribute("type", "text")
-    addMerchantDiv.appendChild(addMerchantSectionInput)
 
     let addMerchantSectionSelectionDiv = document.createElement("div")
     addMerchantSectionSelectionDiv.setAttribute("class", "modalSectionDropdown")
-    let addMerchantSectionSelectionBtn = document.createElement("button")
-    addMerchantSectionSelectionBtn.setAttribute("class", "modalSectionDropdownBtn")
-    addMerchantSectionSelectionBtn.innerHTML = "Choose Section"
-    addMerchantSectionSelectionDiv.appendChild(addMerchantSectionSelectionBtn)
+    let addMerchantSectionSelectionField = document.createElement("label")
+    addMerchantSectionSelectionField.setAttribute("class", "modalSectionDropdownField")
+    addMerchantSectionSelectionField.innerHTML = "Choose Section"
+    addMerchantSectionSelectionDiv.appendChild(addMerchantSectionSelectionField)
     let addMerchantSectionSelectionContent = document.createElement("div")
     addMerchantSectionSelectionContent.setAttribute("class", "modalSectionDropdownContent")
     addMerchantSectionSelectionDiv.appendChild(addMerchantSectionSelectionContent)
@@ -452,12 +448,13 @@ function MapController()
         let section = this.merchantMapData.AddMapSection(name, area, true);
 
         let selectionClass = document.getElementsByClassName(MODAL_SECTION_SELECTION_CLASS)[0]
-        let selButton = document.createElement("button")
-        selButton.value = section.name
-        selButton.onclick = function(){
-            // TODO: fill the section input text box with this selection
+        let selLabel = document.createElement("label")
+        selLabel.innerText = section.name
+        selLabel.onmouseover = function()
+        {
+            document.getElementsByClassName("modalSectionDropdownField")[0].innerText = section.name
         }
-        selectionClass.appendChild(selButton)
+        selectionClass.appendChild(selLabel)
     }
 }
 
