@@ -29,8 +29,8 @@ body {
   background-color: #fefefe;
   margin: 15% auto; /* 15% from the top and centered */
   padding: 20px;
-  border: 1px solid #888;
-  width: 40%; /* Could be more or less, depending on screen size */
+  border: 1px solid rgb(134, 134, 134);
+  width: 60%; /* Could be more or less, depending on screen size */
 }
 
 /* The Close Button */
@@ -54,6 +54,42 @@ body {
   font-size: 32px;
   height: 1.5em;
 }
+
+.modalSectionDropdownBtn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px;
+  font-size: 32px;
+  height: 1.5em;
+  border: none;
+}
+
+.modalSectionDropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.modalSectionDropdownContent {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.modalSectionDropdownContent button {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.modalSectionDropdownContent button:hover {background-color: #ddd;}
+
+.modalSectionDropdown:hover .modalSectionDropdownContent {display: block;}
+
+.modalSectionDropdown:hover .modalSectionDropdownBtn {background-color: #3e8e41;}
 
 .nav
 {

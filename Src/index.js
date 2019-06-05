@@ -13,7 +13,7 @@ let scrollBox = new DisplayBox();
 let mapController = new MapController()
 
 //**STATE**
-const states = ["default", "addSectionModal", "addMerchantModal", "createSection", "selectSection"]
+const states = ["default", "addSectionModal", "addMerchantModal", "createSection"]
 let currentState;
 
 //**SETTINGS**
@@ -27,8 +27,9 @@ const SCROLL_BOX_BORDER_RGBA = new RGBA(100, 100, 255)
 const SCROLL_BOX_STROKE_WEIGHT = 2
 
 //**HTML/JS ELEMENTS**
-let CONTENT_CLASS = ".content"
-let MAP_CANVAS_CLASS = ".mapCanvas"
+let CONTENT_CLASS = "content"
+let MAP_CANVAS_CLASS = "mapCanvas"
+let MODAL_SECTION_SELECTION_CLASS = "modalSectionDropdownContent"
 
 let CONTENT
 let CANVAS
@@ -39,6 +40,8 @@ let DETAILS_MODAL
 let DETAILS_MODAL_CONTENT
 
 let mouseDown = false
+
+let GLOBAL
 
 //**STARTUP**
 function preload()
@@ -58,6 +61,8 @@ function preload()
 
 function setup() 
 {
+    GLOBAL = {}
+
     CONTENT = document.getElementsByClassName("content")[0]
     
     CANVAS = createCanvas(imgMap.width, imgMap.height);
@@ -150,6 +155,17 @@ function setup()
     addMerchantSectionInput.setAttribute("type", "text")
     addMerchantDiv.appendChild(addMerchantSectionInput)
 
+    let addMerchantSectionSelectionDiv = document.createElement("div")
+    addMerchantSectionSelectionDiv.setAttribute("class", "modalSectionDropdown")
+    let addMerchantSectionSelectionBtn = document.createElement("button")
+    addMerchantSectionSelectionBtn.setAttribute("class", "modalSectionDropdownBtn")
+    addMerchantSectionSelectionBtn.innerHTML = "Choose Section"
+    addMerchantSectionSelectionDiv.appendChild(addMerchantSectionSelectionBtn)
+    let addMerchantSectionSelectionContent = document.createElement("div")
+    addMerchantSectionSelectionContent.setAttribute("class", "modalSectionDropdownContent")
+    addMerchantSectionSelectionDiv.appendChild(addMerchantSectionSelectionContent)
+    addMerchantDiv.appendChild(addMerchantSectionSelectionDiv)
+
     DETAILS_MODAL_CONTENT.appendChild(addMerchantDiv)
     
     let modalSubmit = document.createElement("button")
@@ -166,6 +182,8 @@ function setup()
                 addSectionIDInput.value !== "")
                 {
                     currentState = "createSection"
+                    GLOBAL.name = addSectionNameInput.value
+                    GLOBAL.id = addSectionIDInput.value
                     addSectionNameInput.value = null
                     addSectionIDInput.value = null
                     success = true
@@ -179,6 +197,9 @@ function setup()
                 addMerchantSectionInput.value !== "")
                 {
                     currentState = "selectSection"
+                    GLOBAL.name = addMerchantNameInput.value 
+                    GLOBAL.id = addMerchantIDInput.value 
+                    GLOBAL.section = addMerchantSectionInput.value 
                     addMerchantNameInput.value = null
                     addMerchantIDInput.value = null
                     addMerchantSectionInput.value = null
@@ -381,7 +402,10 @@ function mouseReleased()
         {
             case "createSection":
             {
-                // TODO: trigger back modal
+                // TODO: add section using global data
+                let drawable = scrollBox.drawable()
+                mapController.AddMapSection(GLOBAL.name, drawable.pos,
+                    drawable.width, drawable.height)
                 scrollBox.isActive = false
                 currentState = "default"
             }
@@ -426,6 +450,14 @@ function MapController()
     {
         let area = new Rect(position, width, height)
         let section = this.merchantMapData.AddMapSection(name, area, true);
+
+        let selectionClass = document.getElementsByClassName(MODAL_SECTION_SELECTION_CLASS)[0]
+        let selButton = document.createElement("button")
+        selButton.value = section.name
+        selButton.onclick = function(){
+            // TODO: fill the section input text box with this selection
+        }
+        selectionClass.appendChild(selButton)
     }
 }
 
