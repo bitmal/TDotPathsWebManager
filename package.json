@@ -1,0 +1,27 @@
+{
+  "name": "tdotpathswebmanager",
+  "version": "1.0.0",
+  "description": "web browser interface to add new data, for paths app",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitmal/TDotPathsWebManager.git"
+  },
+  "keywords": [
+    "tdot",
+    "paths",
+    "webmanager"
+  ],
+  "author": "derek mallory",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bitmal/TDotPathsWebManager/issues"
+  },
+  "homepage": "https://github.com/bitmal/TDotPathsWebManager#readme",
+  "dependencies": {
+    "github-api": "^3.2.0"
+  }
+}

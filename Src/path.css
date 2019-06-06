@@ -43,7 +43,7 @@ body {
 
 .modalClose:hover,
 .modalClose:focus {
-  color: black;
+  color: blue;
   text-decoration: none;
   cursor: pointer;
 }
@@ -86,13 +86,14 @@ body {
   display: none;
   position: absolute;
   background-color: #f1f1f1;
-  width: 100%;
+  min-width: 5vw;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
 }
 
 .modalSectionDropdownContent label {
   color: black;
+  position: relative;
   padding: 12px 16px;
   text-decoration: none;
   display: block;

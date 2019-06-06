@@ -35,6 +35,8 @@ let CONTENT
 let CANVAS
 let ADD_SECTION_BTN
 let ADD_MERCHANT_BTN
+let SAVE_DATA_BTN
+let REMOVE_DATA_BTN
 let NAV
 let DETAILS_MODAL
 let DETAILS_MODAL_CONTENT
@@ -56,7 +58,8 @@ function preload()
     currentState = "default"
 
     jsonDoc = new JSONDocument()
-    jsonDoc.pull('http://derekm.tech/test.json')
+    jsonDoc.read('/test.json')
+    jsonDoc.write('/text.json', "{apoisdjfipoajs}")
 }
 
 function setup() 
@@ -89,6 +92,26 @@ function setup()
         addMerchantDiv.style.display = "block"
         currentState = "addMerchantModal"
     }
+
+    SAVE_DATA_BTN = document.createElement("button")
+    SAVE_DATA_BTN.setAttribute("class", "navItem")
+    SAVE_DATA_BTN.innerHTML = "Save Data"
+    SAVE_DATA_BTN.onclick = function() {
+        // TODO: trigger modal for saving
+        DETAILS_MODAL.style.display = "block"
+        addSectionDiv.style.display = "none"
+        addMerchantDiv.style.display = "none"
+    }
+
+    REMOVE_DATA_BTN = document.createElement("button")
+    REMOVE_DATA_BTN.setAttribute("class", "navItem")
+    REMOVE_DATA_BTN.innerHTML = "Remove Data"
+    REMOVE_DATA_BTN.onclick = function() {
+        // TODO: trigger modal for saving
+        DETAILS_MODAL.style.display = "block"
+        addSectionDiv.style.display = "none"
+        addMerchantDiv.style.display = "none"
+    }
     
     let modalClose = document.getElementsByClassName("modalClose")[0]
     modalClose.onclick = function() {
@@ -106,6 +129,8 @@ function setup()
     NAV = document.getElementsByClassName("nav")[0] 
     NAV.appendChild(ADD_SECTION_BTN)    
     NAV.appendChild(ADD_MERCHANT_BTN) 
+    NAV.appendChild(SAVE_DATA_BTN) 
+    NAV.appendChild(REMOVE_DATA_BTN) 
     
     DETAILS_MODAL = document.getElementsByClassName("modal")[0]
     DETAILS_MODAL_CONTENT = document.getElementsByClassName("modalContent")[0]
@@ -190,15 +215,16 @@ function setup()
             {
                 if (addMerchantNameInput.value !== "" &&
                 addMerchantIDInput.value !== "" &&
-                addMerchantSectionInput.value !== "")
+                addMerchantSectionSelectionField.value !== "")
                 {
                     currentState = "selectSection"
                     GLOBAL.name = addMerchantNameInput.value 
                     GLOBAL.id = addMerchantIDInput.value 
-                    GLOBAL.section = addMerchantSectionInput.value 
+                    GLOBAL.section = addMerchantSectionSelectionField.value 
                     addMerchantNameInput.value = null
                     addMerchantIDInput.value = null
-                    addMerchantSectionInput.value = null
+                    addMerchantSectionSelectionField.value = null
+                    addMerchantSectionSelectionField.innerHTML = "Choose Section"
                     success = true
                 }
             }
@@ -317,7 +343,7 @@ function resetState()
 //**MAP STUFF**
 
 //**NETWORKING STUFF**
-function httpRequest(path, responseType, resultCallback, type="GET", proxy=CORS_PROXY)
+function httpRequest(path, responseType, resultCallback, type="GET", proxy=CORS_PROXY, data=null)
 {
     // use proxy or jsonp to get around CORS
     // https://gist.github.com/jesperorb/6ca596217c8dfba237744966c2b5ab1e
@@ -329,9 +355,11 @@ function httpRequest(path, responseType, resultCallback, type="GET", proxy=CORS_
         resultCallback(this)
     }
 
-    xmlreq.open(type, CORS_PROXY+path, true)
+    //xmlreq.open(type, CORS_PROXY+path, true)
+    xmlreq.open(type, path, true)
+
     xmlreq.responseType = responseType
-    xmlreq.send()
+    xmlreq.send(data)
 }
 
 //**EVENTS**
@@ -469,6 +497,7 @@ function MapController()
         selLabel.onmouseover = function()
         {
             document.getElementsByClassName("modalSectionDropdownField")[0].innerText = section.name
+            document.getElementsByClassName("modalSectionDropdownField")[0].value = section.id
         }
         selectionClass.appendChild(selLabel)
     }
@@ -628,28 +657,35 @@ function JSONDocument()
     this.raw = null
     this.data = null
 
-    this.pull = function(path)
+    this.read = function(path)
     {
-        httpRequest(path, "", function(data){
-            if (data.status === 200)
+        httpRequest(path, "", function(d){
+            if (d.status === 200)
             {
                 this.isLoaded = true
 
-                this.path = data.responseURL
-                this.raw = data.response;
-                print(data.response)
-                this.data = JSON.parse(data.response)
+                this.path = d.responseURL
+                this.raw = d.response;
+                print(d.response)
+                this.data = JSON.parse(d.response)
+            }
+            else{
+                print("could not locate file")
             }
         })
     }
 
-    this.push = function(path)
+    this.write = function(path, data)
     {
-
-    }
-
-    this.write = function(data)
-    {
+        httpRequest(path, "", function(d){
+            if (d.status === 200)
+            {
+                print("successfully wrote file")
+            }
+            else{
+                print("could not locate file")
+            }
+        }, "POST", CORS_PROXY, data)
     }
 }
 
